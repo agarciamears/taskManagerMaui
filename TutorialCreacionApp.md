@@ -368,15 +368,14 @@ Agrega un nuevo archivo **UserPage.xaml** y copia el siguiente código:
 Agrega un archivo `UserPage.xaml.cs` y define la clase para la nueva página:
 
 ```csharp
-namespace gestorTareasaMaui
+namespace gestorTareasaMaui;
+
+public partial class UserPage : ContentPage
 {
-    public partial class PerfilPage : ContentPage
-    {
-        public PerfilPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public UserPage()
+	{
+		InitializeComponent();
+	}
 }
 ```
 
