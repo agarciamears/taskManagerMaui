@@ -21,34 +21,39 @@ En este tutorial, aprenderás a construir una aplicación de gestor de tareas en
 ```xml
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="gestorTareasaMaui.MainPage">
-
-    <StackLayout Padding="10">
-        <Label Text="Gestor de Tareas" FontSize="24" HorizontalOptions="Center" />
-        <ScrollView>
-            <CollectionView x:Name="TareasCollectionView">
+             x:Class="gestorTareasaMaui.MainPage"
+              BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, Dark={StaticResource BackgroundColorDark}}">
+    <ScrollView>
+        <StackLayout Padding="10" BackgroundColor="White">
+            <Label Text="Mi Primer Gestor de Tareas" FontSize="22" HorizontalOptions="Center" TextColor="Purple" />
+            <CollectionView x:Name="TareasCollectionView" BackgroundColor="White">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <SwipeView>
-                            <SwipeView.RightItems>
+                            <SwipeView.LeftItems>
                                 <SwipeItems>
                                     <SwipeItem Text="Editar" BackgroundColor="Blue" Invoked="OnEditarTareaCommand" CommandParameter="{Binding .}" />
-                                    <SwipeItem Text="Borrar" BackgroundColor="Red" Invoked="OnBorrarTareaCommand" CommandParameter="{Binding .}" />
+                                </SwipeItems>
+                            </SwipeView.LeftItems>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Borrar" BackgroundColor="Red"  Invoked="OnBorrarTareaCommand"  CommandParameter="{Binding .}" />
                                 </SwipeItems>
                             </SwipeView.RightItems>
-                            <Border Stroke="LightGray" StrokeThickness="1" CornerRadius="10" Padding="10" Margin="5">
+                            <Border Stroke="LightGray" StrokeThickness="1" Padding="10" Margin="5">
                                 <StackLayout>
                                     <Label Text="{Binding nombre}" FontSize="18" FontAttributes="Bold" />
                                     <Label Text="{Binding descripcion}" FontSize="14" />
+                                    <Label Text="{Binding estado}" FontSize="12" TextColor="Green" />
                                 </StackLayout>
                             </Border>
                         </SwipeView>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-        </ScrollView>
-        <Button Text="Agregar Tarea" Clicked="OnAgregarTareaClicked" />
-    </StackLayout>
+            <Button Text="Agregar Tarea" Clicked="OnAgregarTareaClicked" />
+        </StackLayout>
+    </ScrollView>
 </ContentPage>
 ```
 
@@ -59,7 +64,7 @@ En este tutorial, aprenderás a construir una aplicación de gestor de tareas en
 
 ## Paso 3: Crear el Modelo de Datos
 1. Definir la clase `Tarea`:
-   - Añade un nuevo archivo llamado `tarea.cs` y define la clase de la siguiente manera:
+   - Añade un nuevo archivo llamado  `tarea.cs` en raiz y define la clase de la siguiente manera:
 
 ```csharp
 using SQLite;
@@ -84,21 +89,28 @@ public class tarea
 ```csharp
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace gestorTareasaMaui
 {
     public partial class MainPage : ContentPage
     {
+        
+        
         private ObservableCollection<tarea> tareasList;
+
 
         public MainPage()
         {
+   
             InitializeComponent();
-            tareasList = new ObservableCollection<tarea>();
+            tareasList = new ObservableCollection<tarea> ();
             TareasCollectionView.ItemsSource = tareasList;
             LoadTareas();
         }
 
+        
+        //Metodo para cargar las tareas de la base de datos que ya persisten.
         private async void LoadTareas()
         {
             var tareas = await App.Database.GetTareasAsync();
@@ -111,7 +123,8 @@ namespace gestorTareasaMaui
 
         private async void OnAgregarTareaClicked(object sender, EventArgs e)
         {
-            string nombre = await DisplayPromptAsync("Nombre", "Ingrese el nombre de la tarea");
+
+            string nombre = await DisplayPromptAsync("Nombre", "Ingrese el nombre de la tarea");    
             string descripcion = await DisplayPromptAsync("Descripcion", "Ingrese la descripcion de la tarea");
             string estado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "En Proceso", "Completada");
 
@@ -123,11 +136,60 @@ namespace gestorTareasaMaui
                     descripcion = descripcion,
                     estado = estado
                 };
+
+                //Guardar la tarea en la base de datos
                 await App.Database.SaveTareaAsync(nuevaTarea);
+
                 tareasList.Add(nuevaTarea);
+                //TareasListView.ItemsSource = null;
+                //TareasListView.ItemsSource = tareasList;
+               // LoadTareas();
+            }
+
+        }
+
+        //Borrando tarea de la Lista y de la base de datos
+        private async void OnBorrarTareaCommand(object sender, EventArgs e)
+        {
+            var swipeItem = sender as SwipeItem;
+            var tarea = swipeItem?.CommandParameter as tarea;
+
+            if (tarea != null)
+            {
+                await App.Database.DeleteTareaAsync(tarea);
+                tareasList.Remove(tarea); // Eliminar la tarea de la colección observable
             }
         }
+
+        // Editando tarea de la Lista y de la base de datos
+        private async void OnEditarTareaCommand(object sender, EventArgs e)
+        {
+            var swipeItem = sender as SwipeItem;
+            var tarea = swipeItem?.CommandParameter as tarea;
+
+            if (tarea != null)
+            {
+                string nuevoNombre = await DisplayPromptAsync("Editar Tarea", "Nombre de la tarea:", initialValue: tarea.nombre);
+                string nuevaDescripcion = await DisplayPromptAsync("Editar Tarea", "Descripción de la tarea:", initialValue: tarea.descripcion);
+                string nuevoEstado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "En Proceso", "Completada");
+
+                if (!string.IsNullOrEmpty(nuevoNombre) && !string.IsNullOrEmpty(nuevaDescripcion))
+                {
+                    tarea.nombre = nuevoNombre;
+                    tarea.descripcion = nuevaDescripcion;
+                    tarea.estado = nuevoEstado;
+
+                    // Actualizar la tarea en la base de datos
+                    await App.Database.SaveTareaAsync(tarea);
+
+                    // Recargar la lista de tareas
+                    LoadTareas();
+                }
+            }
+        }
+
     }
+
 }
 ```
 
@@ -143,33 +205,55 @@ namespace gestorTareasaMaui
 dotnet add package sqlite-net-pcl
 ```
 
-2. Crear la base de datos y la tabla en `Database.cs`:
+2. Crear la base de datos y la tabla en `database.cs` paea ello tenemos que agregar la clase a nuestros archivos raiz:
 
 ```csharp
-public class Database
+using SQLite;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+
+//Creando clase de base de datos:
+namespace gestorTareasaMaui
 {
-    private readonly SQLiteAsyncConnection _database;
-
-    public Database(string dbPath)
+     public class database
     {
-        _database = new SQLiteAsyncConnection(dbPath);
-        _database.CreateTableAsync<tarea>().Wait();
-    }
+        //Creando conexion a la base de datos:
+        private readonly SQLiteAsyncConnection _database;
 
-    public Task<List<tarea>> GetTareasAsync()
-    {
-        return _database.Table<tarea>().ToListAsync();
-    }
-
-    public Task<int> SaveTareaAsync(tarea tarea)
-    {
-        if (tarea.Id != 0)
+ 
+        public database(string dbPath)
         {
-            return _database.UpdateAsync(tarea);
+            _database = new SQLiteAsyncConnection(dbPath);
+            _database.CreateTableAsync<tarea>().Wait();
         }
-        else
+
+        //Metodo para obtener todas las tareas de la base de datos:
+        public Task<List<tarea>> GetTareasAsync()
         {
-            return _database.InsertAsync(tarea);
+            return _database.Table<tarea>().ToListAsync();
+        }
+
+        //Metdo para guardar tarea en la base de datos:
+        public Task<int> SaveTareaAsync(tarea tarea)
+        {
+            if (tarea.id != 0)
+            {
+                return _database.UpdateAsync(tarea);
+            }
+            else
+            {
+                return _database.InsertAsync(tarea);
+            }
+        }
+
+        //Metodo para eliminar tarea de la base de datos:
+        public Task<int> DeleteTareaAsync(tarea tarea)
+        {
+            return _database.DeleteAsync(tarea);
         }
     }
 }
