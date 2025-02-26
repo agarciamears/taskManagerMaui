@@ -264,3 +264,122 @@ namespace gestorTareasaMaui
    - Ejecuta la aplicación en un emulador o dispositivo físico.
    - Verifica que las tareas se guardan y persisten en la base de datos.
    - Prueba las funcionalidades de agregar, editar y borrar tareas.
+
+## Paso 7 (Opcional): Agregar una Página de Perfil al Menú de Navegación
+
+En este paso, agregaremos una nueva página **Perfil** al menú de la aplicación utilizando `Shell`.
+
+### **1. Agregar el ítem de navegación en `AppShell.xaml`**
+
+Abre el archivo `AppShell.xaml` y modifícalo para incluir la nueva página de perfil:
+
+```xml
+<Shell
+    x:Class="gestorTareasaMaui.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:gestorTareasaMaui"
+    Shell.FlyoutBehavior="Flyout">
+
+    <ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate local:MainPage}"
+        Route="MainPage" />
+
+    <ShellContent
+        Title="Perfil"
+        ContentTemplate="{DataTemplate local:PerfilPage}"
+        Route="UserPage" />
+</Shell>
+```
+
+### **2. Crear la Página `UserPage.xaml`**
+
+Agrega un nuevo archivo **UserPage.xaml** y copia el siguiente código:
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="gestorTareasaMaui.UserPage"
+             Title="My Profile">
+
+    <ContentPage.Background>
+        <LinearGradientBrush>
+            <GradientStop Color="#6A0DAD" Offset="0.1"/>
+            <GradientStop Color="#9B30FF" Offset="1.0"/>
+        </LinearGradientBrush>
+    </ContentPage.Background>
+
+    <VerticalStackLayout Padding="30" Spacing="25" VerticalOptions="Center">
+
+        <!-- Avatar Redondeado -->
+        <Border Stroke="White" StrokeThickness="3" Background="White"
+                WidthRequest="120" HeightRequest="120" StrokeShape="Ellipse"
+                HorizontalOptions="Center">
+            <Image Source="dotnet_bot.png" WidthRequest="100" HeightRequest="100"/>
+        </Border>
+
+        <!-- Tarjeta de Información -->
+        <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 15"
+                Padding="20" Margin="5">
+            <Grid RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Text="Name:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="0" Grid.Column="0"/>
+                <Label Text="Alex Maui" FontSize="18" TextColor="Black" Grid.Row="0" Grid.Column="1"/>
+
+                <Label Text="Username:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="1" Grid.Column="0"/>
+                <Label Text="@agmmauideveloper" FontSize="18" TextColor="Black" Grid.Row="1" Grid.Column="1"/>
+
+                <Label Text="Email:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="2" Grid.Column="0"/>
+                <Label Text="alexmaui@email.com" FontSize="18" TextColor="Black" Grid.Row="2" Grid.Column="1"/>
+
+                <Label Text="Location:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="3" Grid.Column="0"/>
+                <Label Text="Ciudad de México, MX" FontSize="18" TextColor="Black" Grid.Row="3" Grid.Column="1"/>
+            </Grid>
+        </Border>
+
+        <!-- Botón de edición -->
+        <Button Text="Editar Perfil"
+                BackgroundColor="#6A0DAD"
+                TextColor="White"
+                CornerRadius="20"
+                FontAttributes="Bold"
+                WidthRequest="200"
+                HorizontalOptions="Center"/>
+    </VerticalStackLayout>
+    
+</ContentPage>
+```
+
+### **3. Crear el Código `UserPage.xaml.cs`**
+
+Agrega un archivo `UserPage.xaml.cs` y define la clase para la nueva página:
+
+```csharp
+namespace gestorTareasaMaui
+{
+    public partial class PerfilPage : ContentPage
+    {
+        public PerfilPage()
+        {
+            InitializeComponent();
+        }
+    }
+}
+```
+
+### **4. Ejecutar la Aplicación**
+Prueba la aplicación y verifica que el nuevo ítem de perfil se muestra en el menú de navegación. Puedes personalizar la página de perfil y agregar más información según tus necesidades.
+

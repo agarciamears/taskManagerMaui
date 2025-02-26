@@ -7,11 +7,18 @@
     Shell.FlyoutBehavior="Flyout"
     Title="gestorTareasaMaui">
 
+    <!-- Pagina Home -->
     <ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" 
         />
-    
+
+    <!-- Nueva página de perfil -->
+    <ShellContent
+        Title="Perfil"
+        ContentTemplate="{DataTemplate local:UserPage}"
+        Route="PerfilPage"
+        Icon="perfil.png" />
 
 </Shell>
