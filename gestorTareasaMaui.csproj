@@ -60,7 +60,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiImage Remove="Resources\Images\avatar.png" />
+	  <MauiImage Remove="Resources\Images\maui.png" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <MauiXaml Remove="PerfilPage.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Resources\Images\avatar.png" />
+	  <None Remove="Resources\Images\maui.png" />
 	</ItemGroup>
 
 	<ItemGroup>

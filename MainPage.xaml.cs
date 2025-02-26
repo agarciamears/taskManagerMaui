@@ -13,7 +13,6 @@ namespace gestorTareasaMaui
 
         public MainPage()
         {
-   
             InitializeComponent();
             tareasList = new ObservableCollection<tarea> ();
             TareasCollectionView.ItemsSource = tareasList;
@@ -52,9 +51,10 @@ namespace gestorTareasaMaui
                 await App.Database.SaveTareaAsync(nuevaTarea);
 
                 tareasList.Add(nuevaTarea);
+                await DisplayAlert("Tarea Agregada", "La tarea se ha agregado correctamente", "OK");
                 //TareasListView.ItemsSource = null;
                 //TareasListView.ItemsSource = tareasList;
-               // LoadTareas();
+                // LoadTareas();
             }
 
         }
@@ -69,6 +69,7 @@ namespace gestorTareasaMaui
             {
                 await App.Database.DeleteTareaAsync(tarea);
                 tareasList.Remove(tarea); // Eliminar la tarea de la colección observable
+                await DisplayAlert("Tarea Eliminada", "La tarea se ha eliminado correctamente", "OK");
             }
         }
 
@@ -92,6 +93,7 @@ namespace gestorTareasaMaui
 
                     // Actualizar la tarea en la base de datos
                     await App.Database.SaveTareaAsync(tarea);
+                    
 
                     // Recargar la lista de tareas
                     LoadTareas();
