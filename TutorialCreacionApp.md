@@ -288,7 +288,7 @@ Abre el archivo `AppShell.xaml` y modifícalo para incluir la nueva página de p
 
     <ShellContent
         Title="Perfil"
-        ContentTemplate="{DataTemplate local:PerfilPage}"
+        ContentTemplate="{DataTemplate local:UserPage}"
         Route="UserPage" />
 </Shell>
 ```
