@@ -1,0 +1,38 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="gestorTareasaMaui.MainPage"
+              BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, Dark={StaticResource BackgroundColorDark}}">
+             
+
+    <ScrollView>
+        <StackLayout Padding="10" BackgroundColor="White">
+            <Label Text="Mi Primer Gestor de Tareas" FontSize="22" HorizontalOptions="Center" TextColor="Purple" />
+            <CollectionView x:Name="TareasCollectionView" BackgroundColor="White">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <SwipeView>
+                            <SwipeView.LeftItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Editar" BackgroundColor="Blue" Invoked="OnEditarTareaCommand" CommandParameter="{Binding .}" />
+                                </SwipeItems>
+                            </SwipeView.LeftItems>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Borrar" BackgroundColor="Red"  Invoked="OnBorrarTareaCommand"  CommandParameter="{Binding .}" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Border Stroke="LightGray" StrokeThickness="1" Padding="10" Margin="5">
+                                <StackLayout>
+                                    <Label Text="{Binding nombre}" FontSize="18" FontAttributes="Bold" />
+                                    <Label Text="{Binding descripcion}" FontSize="14" />
+                                    <Label Text="{Binding estado}" FontSize="12" TextColor="Green" />
+                                </StackLayout>
+                            </Border>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Button Text="Agregar Tarea" Clicked="OnAgregarTareaClicked" />
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

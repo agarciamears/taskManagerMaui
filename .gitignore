@@ -1,0 +1,38 @@
+# Archivos de compilación y temporales
+bin/
+obj/
+
+# Configuración de usuario y editor
+.vs/
+.vscode/
+*.user
+*.suo
+*.csproj.user
+
+# Dependencias de NuGet
+packages/
+project.lock.json
+*.nupkg
+*.snupkg
+
+# Caché y archivos del sistema
+.DS_Store
+Thumbs.db
+*.db-shm
+*.db-wal
+
+# Archivos de depuración y compilación de MAUI
+*.apk
+*.aab
+*.ipa
+*.pdb
+*.db
+*.db-shm
+*.db-wal
+App.xaml.cache
+
+# Plataformas específicas de MAUI
+Platforms/iOS/obj/
+Platforms/Android/obj/
+Platforms/MacCatalyst/obj/
+Platforms/Windows/obj/
