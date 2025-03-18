@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using gestorTareasaMaui.Models;
 
 namespace gestorTareasaMaui
 {
@@ -92,7 +93,7 @@ namespace gestorTareasaMaui
                     tarea.estado = nuevoEstado;
 
                     // Actualizar la tarea en la base de datos
-                    await App.Database.SaveTareaAsync(tarea);
+                    await App.Database.SaveTareaAsync(tarea);GridItemsLayout
                     
 
                     // Recargar la lista de tareas
