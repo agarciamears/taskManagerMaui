@@ -26,7 +26,7 @@ En este tutorial, aprenderás a construir una aplicación de gestor de tareas en .
 
 ![Crear nuevo proyecto MAUI](Images/MauiTask1.png)
 
-![Nombre proyect: GestorDeTareas](Images/MauiTask2.ong)
+![Nombre proyect: GestorDeTareas](Images/MauiTask2.png)
 
 ## Paso 2: Crear la Interfaz de Usuario (UI)
 1. Diseñar la pantalla principal:
