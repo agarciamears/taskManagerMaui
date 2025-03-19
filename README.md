@@ -16,6 +16,7 @@ En este tutorial, aprenderás a construir una aplicación de gestor de tareas en .
 - **/Resources**: Contiene recursos como imágenes, fuentes y archivos de diseño.
 - **/Views**: Contiene las vistas de la aplicación.
 - **/Models**: Contiene las clases de modelo de datos.
+- **/Converters**: Contiene los convertidores de datos.
 
 ## Paso 1: Configuración del Proyecto.
 1. Crear un nuevo proyecto MAUI:
