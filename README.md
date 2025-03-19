@@ -256,7 +256,7 @@ private async void OnAgregarTareaClicked(object sender, EventArgs e)
 {
     string nombre = await DisplayPromptAsync("Nombre", "Ingrese el nombre de la tarea");
     string descripcion = await DisplayPromptAsync("Descripcion", "Ingrese la descripcion de la tarea");
-    string estado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "En Proceso", "Completada");
+    string estado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
 
     if (!string.IsNullOrEmpty(nombre) && !string.IsNullOrEmpty(descripcion))
     {
@@ -307,7 +307,7 @@ private async void OnEditarTareaCommand(object sender, EventArgs e)
     {
         string nuevoNombre = await DisplayPromptAsync("Editar Tarea", "Nombre de la tarea:", initialValue: tarea.nombre);
         string nuevaDescripcion = await DisplayPromptAsync("Editar Tarea", "Descripción de la tarea:", initialValue: tarea.descripcion);
-        string nuevoEstado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "En Proceso", "Completada");
+        string nuevoEstado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
 
         if (!string.IsNullOrEmpty(nuevoNombre) && !string.IsNullOrEmpty(nuevaDescripcion))
         {
@@ -367,7 +367,7 @@ namespace gestorTareasaMaui
 
             string nombre = await DisplayPromptAsync("Nombre", "Ingrese el nombre de la tarea");    
             string descripcion = await DisplayPromptAsync("Descripcion", "Ingrese la descripcion de la tarea");
-            string estado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "En Proceso", "Completada");
+            string estado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
 
             if (!string.IsNullOrEmpty(nombre) && !string.IsNullOrEmpty(descripcion))
             {
@@ -412,7 +412,7 @@ namespace gestorTareasaMaui
             {
                 string nuevoNombre = await DisplayPromptAsync("Editar Tarea", "Nombre de la tarea:", initialValue: tarea.nombre);
                 string nuevaDescripcion = await DisplayPromptAsync("Editar Tarea", "Descripción de la tarea:", initialValue: tarea.descripcion);
-                string nuevoEstado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "En Proceso", "Completada");
+                string nuevoEstado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
 
                 if (!string.IsNullOrEmpty(nuevoNombre) && !string.IsNullOrEmpty(nuevaDescripcion))
                 {
@@ -507,7 +507,6 @@ namespace gestorTareasaMaui
    - Verifica que las tareas se guardan y persisten en la base de datos.
    - Prueba las funcionalidades de agregar, editar y borrar tareas.
 
-
 ## Paso 7: Agregar Picker para seleccionar el estado de la tarea.
 - Agregar un Picker para seleccionar el estado de la tarea.
 - Utilizar `Picker` para mostrar una lista de opciones y permitir al usuario seleccionar una.
@@ -515,14 +514,14 @@ namespace gestorTareasaMaui
 
 ### Agregar Picker al formulario de agregar tarea MainPage.xaml.
 - Agregar entre el Titulo del label y el CollectionView.
-- Agregar Picker con opciones de estado: Pendiente, En Proceso, Completada o Mostrar Todo.
+- Agregar Picker con opciones de estado: Pendiente, Proceso, Completada o Mostrar Todo.
 ```xml
 <!-- Picker para seleccionar el estado -->
 <Picker x:Name="EstadoPicker" Title="Filtrar por Estado" SelectedIndexChanged="OnEstadoChanged">
     <Picker.Items>
         <x:String>Mostrar Todo</x:String>
         <x:String>Pendiente</x:String>
-        <x:String>En Proceso</x:String>
+        <x:String>Proceso</x:String>
         <x:String>Completada</x:String>
     </Picker.Items>
 </Picker>
@@ -561,6 +560,71 @@ namespace gestorTareasaMaui
         LoadTareas(estadoSeleccionado);  // Cargar las tareas filtradas por estado
     }
 
+```
+
+### Crear converter para cambiar el color del estado de la tarea.
+- Crear una carpeta llamada `Converters` en la raíz del proyecto.
+- Dentro de la carpeta `Converters`, crear una clase llamada `EstadoColorConverter.cs`.
+- Un Converter es una clase que implementa la interfaz `IValueConverter` y convierte un valor en otro.
+
+1. Editamos el archivo MainPage.xaml y agregamos el converter.
+```xml
+<!-- Cambiar el color del texto del estado dependiendo del valor -->
+<Label Text="{Binding estado}" FontSize="12" 
+TextColor="{Binding estado, Converter={StaticResource EstadoColorConverter}}" />
+```
+
+2. Creamos la clase `EstadoColorConverter.cs` en la carpeta `Converters`.
+
+```csharp
+using System;
+using Microsoft.Maui.Controls;
+using System.Globalization;
+
+namespace gestorTareasaMaui
+{
+    public class EstadoColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string estado = value as string;
+
+            switch (estado)
+            {
+                case "Pendiente":
+                    return Color.FromArgb("#FF0000"); // Rojo para tareas Pendientes
+                case "Proceso":
+                    return Color.FromArgb("#FFFF00");  // Amarillo para tareas Proceso
+                case "Completada":
+                    return Color.FromArgb("#008000");  // Verde para tareas Completadas
+                default:
+                    return Color.FromArgb("#808080");  // Gris para cualquier otro caso
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+```
+
+### Agregar el converter al archivo `App.xaml`.
+- Agregar el converter al archivo `App.xaml` para que esté disponible en toda la aplicación.
+- Agregar el namespace `xmlns:converters` y la referencia al converter en `Application.Resources`.
+
+```xml
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Converters="clr-namespace:gestorTareasaMaui.Converters"
+             x:Class="gestorTareasaMaui.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <Converters:EstadoColorConverter x:Key="EstadoColorConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+ </Application>
 ```
 
 ---

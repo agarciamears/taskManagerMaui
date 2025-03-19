@@ -20,16 +20,32 @@ namespace gestorTareasaMaui
             LoadTareas();
         }
 
-        
-        //Metodo para cargar las tareas de la base de datos que ya persisten.
-        private async void LoadTareas()
+
+        // Método para cargar las tareas desde la base de datos con picker agregado
+
+        private async void LoadTareas(string estadoFiltro = null) //Agregamos Variable dentro del metodo
         {
             var tareas = await App.Database.GetTareasAsync();
             tareasList.Clear();
+
+            //------------  Filtrar tareas si se especifica un estado dentro --------------------------
+            if (!string.IsNullOrEmpty(estadoFiltro) && estadoFiltro != "Mostrar Todo")
+            {
+                tareas = tareas.Where(t => t.estado == estadoFiltro).ToList();
+            }
+
+            // Agregar las tareas a la colección
             foreach (var tarea in tareas)
             {
                 tareasList.Add(tarea);
             }
+        }
+
+        // Evento cuando el usuario cambia el filtro de estado
+        private void OnEstadoChanged(object sender, EventArgs e)
+        {
+            string estadoSeleccionado = EstadoPicker.SelectedItem as string;
+            LoadTareas(estadoSeleccionado);  // Cargar las tareas filtradas por estado
         }
 
         private async void OnAgregarTareaClicked(object sender, EventArgs e)
@@ -37,7 +53,7 @@ namespace gestorTareasaMaui
 
             string nombre = await DisplayPromptAsync("Nombre", "Ingrese el nombre de la tarea");    
             string descripcion = await DisplayPromptAsync("Descripcion", "Ingrese la descripcion de la tarea");
-            string estado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "En Proceso", "Completada");
+            string estado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
 
             if (!string.IsNullOrEmpty(nombre) && !string.IsNullOrEmpty(descripcion))
             {
@@ -84,7 +100,7 @@ namespace gestorTareasaMaui
             {
                 string nuevoNombre = await DisplayPromptAsync("Editar Tarea", "Nombre de la tarea:", initialValue: tarea.nombre);
                 string nuevaDescripcion = await DisplayPromptAsync("Editar Tarea", "Descripción de la tarea:", initialValue: tarea.descripcion);
-                string nuevoEstado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "En Proceso", "Completada");
+                string nuevoEstado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
 
                 if (!string.IsNullOrEmpty(nuevoNombre) && !string.IsNullOrEmpty(nuevaDescripcion))
                 {
@@ -93,9 +109,8 @@ namespace gestorTareasaMaui
                     tarea.estado = nuevoEstado;
 
                     // Actualizar la tarea en la base de datos
-                    await App.Database.SaveTareaAsync(tarea);GridItemsLayout
-                    
-
+                    await App.Database.SaveTareaAsync(tarea);
+                   
                     // Recargar la lista de tareas
                     LoadTareas();
                 }

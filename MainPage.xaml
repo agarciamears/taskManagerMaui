@@ -7,6 +7,16 @@
     <ScrollView>
         <StackLayout Padding="10" BackgroundColor="White">
             <Label Text="Mi Primer Gestor de Tareas" FontSize="22" HorizontalOptions="Center" TextColor="Purple" />
+
+            <Picker x:Name="EstadoPicker" Title="Filtrar por " SelectedIndexChanged="OnEstadoChanged">
+                <Picker.Items>
+                    <x:String>Mostrar Todo</x:String>
+                    <x:String>Pendiente</x:String>
+                    <x:String>Proceso</x:String>
+                    <x:String>Completada</x:String>
+                </Picker.Items>
+            </Picker>
+
             <CollectionView x:Name="TareasCollectionView" BackgroundColor="White">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -25,7 +35,11 @@
                                 <StackLayout>
                                     <Label Text="{Binding nombre}" FontSize="18" FontAttributes="Bold" />
                                     <Label Text="{Binding descripcion}" FontSize="14" />
-                                    <Label Text="{Binding estado}" FontSize="12" TextColor="Green" />
+                                    
+                                    <!-- Cambiar el color del texto del estado dependiendo del valor -->
+                                    <Label Text="{Binding estado}" FontSize="12" 
+                                    TextColor="{Binding estado, Converter={StaticResource EstadoColorConverter}}" />
+                                    
                                 </StackLayout>
                             </Border>
                         </SwipeView>
