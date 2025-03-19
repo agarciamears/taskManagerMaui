@@ -1,4 +1,4 @@
-# Worksop .NET MAUI 2025: Aplicación de Gestor de Tareas
+# Workshop .NET MAUI 2025: Aplicación de Gestor de Tareas
 
 ## Introducción.
 En este tutorial, aprenderás a construir una aplicación de gestor de tareas en .NET MAUI desde cero. La aplicación permitirá agregar, editar y borrar tareas, y utilizará SQLite para el almacenamiento local. Este tutorial está diseñado para llevarte de la mano, paso a paso, con explicaciones teóricas y consejos prácticos.
