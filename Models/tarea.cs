@@ -16,8 +16,6 @@ namespace gestorTareasaMaui.Models
         public string descripcion { get; set; }
         public string estado { get; set; }
       
-
-
     }
 }
 

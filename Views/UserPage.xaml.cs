@@ -1,4 +1,4 @@
-namespace gestorTareasaMaui;
+namespace gestorTareasaMaui.Views;
 
 public partial class UserPage : ContentPage
 {

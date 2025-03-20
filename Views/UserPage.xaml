@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="gestorTareasaMaui.UserPage"
-             Title="My Profile">
+             x:Class="gestorTareasaMaui.Views.UserPage"
+             xmlns:viewModels="clr-namespace:gestorTareasaMaui.ViewModels" 
+             BackgroundColor="White"
+             Title="Profile">
 
-    <ContentPage.Background>
-        <LinearGradientBrush>
-            <GradientStop Color="#6A0DAD" Offset="0.1"/>
-            <GradientStop Color="#9B30FF" Offset="1.0"/>
-        </LinearGradientBrush>
-    </ContentPage.Background>
+    <!-- View Model Context, For Bidings. -->
+    <ContentPage.BindingContext>
+        <viewModels:UserPageViewModel />
+    </ContentPage.BindingContext>
 
-    <VerticalStackLayout Padding="30" Spacing="25" VerticalOptions="Center">
+    <VerticalStackLayout Padding="15" Spacing="15" VerticalOptions="StartAndExpand">
 
         <!-- Avatar Redondeado -->
         <Border Stroke="White" StrokeThickness="3" Background="White"
                 WidthRequest="120" HeightRequest="120" StrokeShape="Ellipse"
                 HorizontalOptions="Center">
-            <Image Source="dotnet_bot.png" WidthRequest="100" HeightRequest="100"/>
+            <Image Source="robot.png" WidthRequest="150" HeightRequest="150"/>
         </Border>
 
         <!-- Tarjeta de Información -->
-        <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 15"
+        <Border BackgroundColor="White" StrokeThickness="10" StrokeShape="RoundRectangle 15"
                 Padding="20" Margin="5">
-            <Grid RowSpacing="10">
+            <Grid RowSpacing="15">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -37,16 +37,16 @@
                 </Grid.ColumnDefinitions>
 
                 <Label Text="Name:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="0" Grid.Column="0"/>
-                <Label Text="Alex Maui" FontSize="18" TextColor="Black" Grid.Row="0" Grid.Column="1"/>
+                <Label Text="{Binding Nombre}" FontSize="14" TextColor="Black" Grid.Row="0" Grid.Column="1"/>
 
-                <Label Text="Username:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="1" Grid.Column="0"/>
-                <Label Text="@agmmauideveloper" FontSize="18" TextColor="Black" Grid.Row="1" Grid.Column="1"/>
+                <Label Text="Username: " FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="1" Grid.Column="0"/>
+                <Label Text="{Binding Username}" FontSize="14" TextColor="Black" Grid.Row="1" Grid.Column="1"/>
 
-                <Label Text="Email:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="2" Grid.Column="0"/>
-                <Label Text="alexmaui@email.com" FontSize="18" TextColor="Black" Grid.Row="2" Grid.Column="1"/>
+                <Label Text="Email: " FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="2" Grid.Column="0"/>
+                <Label Text="{Binding Correo}" FontSize="14" TextColor="Black" Grid.Row="2" Grid.Column="1"/>
 
-                <Label Text="Location:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="3" Grid.Column="0"/>
-                <Label Text="Ciudad de México, MX" FontSize="18" TextColor="Black" Grid.Row="3" Grid.Column="1"/>
+                <Label Text="Location: " FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="3" Grid.Column="0"/>
+                <Label Text="{Binding Location}" FontSize="14" TextColor="Black" Grid.Row="3" Grid.Column="1"/>
             </Grid>
         </Border>
 

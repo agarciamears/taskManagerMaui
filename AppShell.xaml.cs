@@ -1,4 +1,6 @@
-﻿namespace gestorTareasaMaui
+﻿using gestorTareasaMaui.Views;
+
+namespace gestorTareasaMaui
 {
     public partial class AppShell : Shell
     {

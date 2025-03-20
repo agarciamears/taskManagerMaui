@@ -80,13 +80,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="UserPage.xaml">
+	  <MauiXaml Update="Views\UserPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Views\" />
 	</ItemGroup>
 
 </Project>

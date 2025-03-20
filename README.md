@@ -15,6 +15,7 @@ En este tutorial, aprenderás a construir una aplicación de gestor de tareas en .
 - **/Platforms**: Contiene el código específico de cada plataforma (Android, iOS, Windows, etc.).
 - **/Resources**: Contiene recursos como imágenes, fuentes y archivos de diseño.
 - **/Views**: Contiene las vistas de la aplicación.
+- **/ViewModels**: Contiene los modelos de vista de la aplicación.
 - **/Models**: Contiene las clases de modelo de datos.
 - **/Converters**: Contiene los convertidores de datos.
 
@@ -29,6 +30,17 @@ En este tutorial, aprenderás a construir una aplicación de gestor de tareas en .
 
 ![Nombre proyect: GestorDeTareas](Images/MauiTask2.png)
 
+
+### Creamos las carpetas de esteuctura de proyecto en caso de no existir.
+- Crear las carpetas `Views`, `ViewModels`, `Models` y `Converters` en la raíz del proyecto.
+- Estas carpetas se utilizarán para organizar las vistas, modelos de vista, modelos de datos y convertidores de datos de la aplicación.
+
+### Dentro de ViewModels creamos los archivos `BaseViewModel.cs` y `MainPageViewModel.cs`.
+- `BaseViewModel.cs`: Clase base para los modelos de vista de la aplicación.
+- `MainPageViewModel.cs`: Modelo de vista para la página principal de la aplicación.
+
+---
+
 ## Paso 2: Crear la Interfaz de Usuario (UI)
 1. Diseñar la pantalla principal:
    - Vamos a utilizar un `CollectionView` para mostrar la lista de tareas.
@@ -42,14 +54,17 @@ En este tutorial, aprenderás a construir una aplicación de gestor de tareas en .
 ```xml
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="gestorTareasaMaui.MainPage"
+             x:Class="gestorTareasaMaui.Views.MainPage"
+             xmlns:viewModels="clr-namespace:gestorTareasaMaui.ViewModels"   //Agregamos el namespace de los viewModels
              BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, Dark={StaticResource BackgroundColorDark}}">
 ```
 
-### Establece el fondo de la pagina (Ya se encuentra dentro de ContentPage).
+### Agregar el ViewModel a la página.
 
 ```xml
-BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, Dark={StaticResource BackgroundColorDark}}"
+    <ContentPage.BindingContext>
+        <viewModels:MainPageViewModel /> //Agregamos el ViewModel a la pagina
+    </ContentPage.BindingContext>
 ```
 
 ### Agregar SctollVioew y StackLayout.
@@ -68,37 +83,57 @@ BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, D
 <Label Text="Mi Primer Gestor de Tareas" FontSize="22" HorizontalOptions="Center" TextColor="Purple" />
 ```
 
+### Agregar un Picker para filtrar las tareas por estado. (Pendiente, Proceso, Completada))
+- Picker: Permite al usuario seleccionar una opción de una lista.
+- Title: Texto que se muestra cuando no se ha seleccionado ninguna opción.
+- SelectedItem: Propiedad que almacena la opción seleccionada.
+- Items: Lista de opciones que se muestran en el Picker.
+
+```xml
+<Picker Title="Filtrar por"  SelectedItem="{Binding EstadoFiltro}">
+    <Picker.Items>
+        <x:String>Mostrar Todo</x:String>
+        <x:String>Pendiente</x:String>
+        <x:String>Proceso</x:String>
+        <x:String>Completada</x:String>
+    </Picker.Items>
+</Picker>
+-
+```
+
 ### Agregar un CollectionView para mostrar las tareas.
 - ItemTemplate: Define la plantilla de cada elemento de la colección.
 - DataTemplate: Define la plantilla de datos para cada elemento.
 - SwipeView: Permite agregar acciones deslizables a los elementos de la lista.
 - SwipeItems: Define los elementos deslizables (Editar y Borrar).
+- SwipeItem: Define un elemento deslizable con un texto y un color de fondo.
+- LeftItems: Elementos deslizables a la izquierda.
 
 ```xml
-  <CollectionView x:Name="TareasCollectionView" BackgroundColor="White">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <SwipeView>
-                            <SwipeView.LeftItems>
-                                <SwipeItems>
-                                    <SwipeItem Text="Editar" BackgroundColor="Blue" Invoked="OnEditarTareaCommand" CommandParameter="{Binding .}" />
-                                </SwipeItems>
-                            </SwipeView.LeftItems>
-                            <SwipeView.RightItems>
-                                <SwipeItems>
-                                    <SwipeItem Text="Borrar" BackgroundColor="Red"  Invoked="OnBorrarTareaCommand"  CommandParameter="{Binding .}" />
-                                </SwipeItems>
-                            </SwipeView.RightItems>
+<CollectionView x:Name="TareasCollectionView" BackgroundColor="White" ItemsSource="{Binding TareasList}"> //Agregamos el nombre de la coleccion y el binding
+    <CollectionView.ItemTemplate>
+        <DataTemplate>
+            <SwipeView>
+                <SwipeView.LeftItems>
+                    <SwipeItems>
+                        <SwipeItem Text="Borrar" BackgroundColor="Red" Command="{Binding BindingContext.OnBorrarTareaCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" />
+                    </SwipeItems>
+                </SwipeView.LeftItems>
+                <SwipeView.RightItems>
+                    <SwipeItems>
+                        <SwipeItem Text="Borrar" BackgroundColor="Red" Command="{Binding BindingContext.OnBorrarTareaCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}"" />
+                    </SwipeItems>
+                </SwipeView.RightItems>
                        
-                               <!-- Aqui se agregan los elementos de la tarea a mostrar (Información) -->
+                    <!-- Aqui se agregan los elementos de la tarea a mostrar (Información) -->
 
 
                             
-                        </SwipeView>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-                <!-- Aqui se agrega el boton para agregar tareas -->
+            </SwipeView>
+        </DataTemplate>
+    </CollectionView.ItemTemplate>
+</CollectionView>
+    <!-- Aqui se agrega el boton para agregar tareas -->
 ```
 
 ### Mostrar Informacion de la Tarea.
@@ -106,13 +141,14 @@ BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, D
 - StackLayout: Permite apilar elementos verticalmente.
 - Label: Muestra texto en la pantalla.
 - Binding: Enlaza los datos de la tarea a los elementos de la interfaz de usuario.
+- Converter: Convierte el estado de la tarea en un color para mostrarlo en la interfaz.
 
 ```xml
 <Border Stroke="LightGray" StrokeThickness="1" Padding="10" Margin="5">
     <StackLayout>
         <Label Text="{Binding nombre}" FontSize="18" FontAttributes="Bold" />
         <Label Text="{Binding descripcion}" FontSize="14" />
-        <Label Text="{Binding estado}" FontSize="12" TextColor="Green" />
+        <Label Text="{Binding estado}" FontSize="12" TextColor="{Binding estado, Converter={StaticResource EstadoColorConverter}}" /> //Agregamos el converter para el color del estado
     </StackLayout>
 </Border>
 ```
@@ -124,7 +160,7 @@ BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, D
 - Text: Texto que se muestra en el botón.
 
 ```xml
-<Button Text="Agregar Tarea" Clicked="OnAgregarTareaClicked" />
+<Button Text="Agregar Tarea" Command="{Binding OnAgregarTareaCommand}" /> //Agregamos el comando para agregar tarea
 ```
 
 ### Cerrar las etiquetas de StackLayout, ScrollView y ContentPage.
@@ -140,37 +176,54 @@ BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, D
 ```xml
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="gestorTareasaMaui.MainPage"
-              BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, Dark={StaticResource BackgroundColorDark}}">
+             x:Class="gestorTareasaMaui.Views.MainPage"
+             xmlns:viewModels="clr-namespace:gestorTareasaMaui.ViewModels"  
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, Dark={StaticResource BackgroundColorDark}}">
+
+    <ContentPage.BindingContext>
+        <viewModels:MainPageViewModel />
+    </ContentPage.BindingContext>
+
     <ScrollView>
         <StackLayout Padding="10" BackgroundColor="White">
             <Label Text="Mi Primer Gestor de Tareas" FontSize="22" HorizontalOptions="Center" TextColor="Purple" />
-            <CollectionView x:Name="TareasCollectionView" BackgroundColor="White">
+
+            <Picker Title="Filtrar por"  SelectedItem="{Binding EstadoFiltro}">
+                <Picker.Items>
+                    <x:String>Mostrar Todo</x:String>
+                    <x:String>Pendiente</x:String>
+                    <x:String>Proceso</x:String>
+                    <x:String>Completada</x:String>
+                </Picker.Items>
+            </Picker>
+
+            <CollectionView ItemsSource="{Binding TareasList}" >
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <SwipeView>
                             <SwipeView.LeftItems>
                                 <SwipeItems>
-                                    <SwipeItem Text="Editar" BackgroundColor="Blue" Invoked="OnEditarTareaCommand" CommandParameter="{Binding .}" />
+                                    <SwipeItem Text="Editar" BackgroundColor="Blue" Command="{Binding BindingContext.OnEditarTareaCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" />
                                 </SwipeItems>
                             </SwipeView.LeftItems>
                             <SwipeView.RightItems>
                                 <SwipeItems>
-                                    <SwipeItem Text="Borrar" BackgroundColor="Red"  Invoked="OnBorrarTareaCommand"  CommandParameter="{Binding .}" />
+                                    <SwipeItem Text="Borrar" BackgroundColor="Red" Command="{Binding BindingContext.OnBorrarTareaCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" />
                                 </SwipeItems>
                             </SwipeView.RightItems>
                             <Border Stroke="LightGray" StrokeThickness="1" Padding="10" Margin="5">
                                 <StackLayout>
                                     <Label Text="{Binding nombre}" FontSize="18" FontAttributes="Bold" />
                                     <Label Text="{Binding descripcion}" FontSize="14" />
-                                    <Label Text="{Binding estado}" FontSize="12" TextColor="Green" />
+                                    <Label Text="{Binding estado}" FontSize="12" TextColor="{Binding estado, Converter={StaticResource EstadoColorConverter}}" />
                                 </StackLayout>
                             </Border>
                         </SwipeView>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-            <Button Text="Agregar Tarea" Clicked="OnAgregarTareaClicked" />
+
+            <Button Text="Agregar Tarea" Command="{Binding OnAgregarTareaCommand}" />
         </StackLayout>
     </ScrollView>
 </ContentPage>
@@ -186,271 +239,84 @@ BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, D
 
 ```csharp
 using SQLite;
-
-public class tarea
-{
-    [PrimaryKey, AutoIncrement]
-    public int Id { get; set; }
-    public string nombre { get; set; }
-    public string descripcion { get; set; }
-    public string estado { get; set; }
-}
-```
-
-## Paso 4: Manejar la Lógica de Negocio
-- Editar el archivo `MainPage.xaml.cs` para agregar la lógica de negocio.
-- Agregar métodos para cargar, agregar, editar y borrar tareas.
-- Utilizar `ObservableCollection` para notificar a la UI cuando hay cambios en la lista.
-- Utilizar métodos de la base de datos para guardar, actualizar y eliminar tareas.
-- Recargar la lista de tareas después de realizar cambios.
-- Asegúrate de que la clase `MainPage` herede de `ContentPage`.
-
-
-### Inicializar la colección de tareas.
-- Crea una colección observable de tareas llamada `tareasList`.
-- En el constructor de la página, inicializa la colección y asigna la lista de tareas al `CollectionView`.
-- Llama al método `LoadTareas` para cargar las tareas al iniciar la aplicación.
-```csharp
-using System.Collections.ObjectModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
-
-public MainPage()
+namespace gestorTareasaMaui.Models
 {
-   
-    InitializeComponent();
-    tareasList = new ObservableCollection<tarea> ();
-    TareasCollectionView.ItemsSource = tareasList;
-    LoadTareas();
-}
-```
-
-### Crear el método para cargar las tareas de la base de datos 'LoadTareas'.
-- Utiliza el método `GetTareasAsync` de la base de datos para obtener todas las tareas.
-- Limpia la lista de tareas y agrega las tareas obtenidas a la colección observable.
-- Utiliza `await` y `async` para realizar operaciones asincrónicas.
-- Utiliza un bucle `foreach` para recorrer las tareas y agregarlas a la colección.
-
-```csharp
-private async void LoadTareas()
-{
-    var tareas = await App.Database.GetTareasAsync();
-    tareasList.Clear();
-    foreach (var tarea in tareas)
+    public class tarea
     {
-        tareasList.Add(tarea);
+        [PrimaryKey, AutoIncrement]
+        //Modelo de datos de la tarea que necesitamos
+        public int id { get; set; }
+        public string nombre { get; set; }
+        public string descripcion { get; set; }
+        public string estado { get; set; }
+      
     }
 }
 ```
 
-### Crear el método para agregar una nueva tarea 'OnAgregarTareaClicked'.
-- DisplayActionSheet: Presenta opciones para elegir algo y DisplayPromptAsync: Muestra cuadros de entrada de texto.
-- Utiliza `DisplayPromptAsync` para mostrar cuadros de entrada de texto.
-- Crea una nueva tarea con los datos ingresados por el usuario.
-- Guarda la tarea en la base de datos utilizando el método `SaveTareaAsync`.
-- Agrega la tarea a la colección observable y recarga la lista de tareas.
-- Utiliza `DisplayActionSheet` para mostrar opciones de estado.
+## Paso 4: Crear dentro de ViewModels los archivos `BaseViewModel.cs` y modificarlo.
+- `BaseViewModel.cs`: Clase base para los modelos de vista de la aplicación.
+- En una aplicación MVVM, la clase BaseViewModel generalmente se usa como la clase base para otros ViewModels que se encargan de la lógica de la interfaz de usuario.
+- Se hereda para que puedas aprovechar las funcionalidades de INotifyPropertyChanged y OnPropertyChanged.
+- Propiedades: Implementa la interfaz `INotifyPropertyChanged` para notificar a las vistas cuando las propiedades cambian.
+- Métodos: `OnPropertyChanged` y `SetProperty` para notificar los cambios de propiedad.
+- `OnPropertyChanged`: Notifica a las vistas que una propiedad ha cambiado.
+- `SetProperty`: Establece un valor en una propiedad y notifica a las vistas si el valor cambia.
+- `CallerMemberName`: Atributo que pasa automáticamente el nombre de la propiedad que llamó al método.
 
 ```csharp
-private async void OnAgregarTareaClicked(object sender, EventArgs e)
-{
-    string nombre = await DisplayPromptAsync("Nombre", "Ingrese el nombre de la tarea");
-    string descripcion = await DisplayPromptAsync("Descripcion", "Ingrese la descripcion de la tarea");
-    string estado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
+using System.ComponentModel; // Importa el espacio de nombres necesario para la interfaz INotifyPropertyChanged
+using System.Runtime.CompilerServices; // Para usar el atributo CallerMemberName
 
-    if (!string.IsNullOrEmpty(nombre) && !string.IsNullOrEmpty(descripcion))
+namespace gestorTareasaMaui.ViewModels
+{
+    // La clase BaseViewModel implementa INotifyPropertyChanged, lo que permite a las vistas escuchar y reaccionar a los cambios de propiedad en los ViewModels.
+    public class BaseViewModel : INotifyPropertyChanged
     {
-        tarea nuevaTarea = new tarea()
+        // Evento que se dispara cuando una propiedad cambia
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        // Método que invoca el evento PropertyChanged para notificar que una propiedad ha cambiado.
+        // Se usa el atributo CallerMemberName para pasar automáticamente el nombre de la propiedad que llamó a este método.
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            nombre = nombre,
-            descripcion = descripcion,
-            estado = estado
-        };
+            // Si hay suscriptores al evento PropertyChanged, se les notifica con el nombre de la propiedad que cambió.
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
-        //Guardar la tarea en la base de datos
-        await App.Database.SaveTareaAsync(nuevaTarea);
-        tareasList.Add(nuevaTarea);
-    }
-}
-```
-
-### Crear el metodo para borrar una tarea de la lista y de la base de datos.
-- Utiliza el evento `OnBorrarTareaCommand` para borrar una tarea.
-- Utiliza el método `DeleteTareaAsync` de la base de datos para eliminar la tarea.
-- Elimina la tarea de la colección observable.
-
-```csharp
-private async void OnBorrarTareaCommand(object sender, EventArgs e)
-{
-    var swipeItem = sender as SwipeItem;
-    var tarea = swipeItem?.CommandParameter as tarea;
-    if (tarea != null)
-    {
-        await App.Database.DeleteTareaAsync(tarea);
-        tareasList.Remove(tarea); // Eliminar la tarea de la colección observable
-    }
-}
-```
-
-### Crear el método para editar una tarea de la lista y de la base de datos.
-- Utiliza el evento `OnEditarTareaCommand` para editar una tarea.
-- Utiliza el método `SaveTareaAsync` de la base de datos para actualizar la tarea.
-- Recarga la lista de tareas después de editar una tarea.
-
-```csharp
-private async void OnEditarTareaCommand(object sender, EventArgs e)
-{
-    var swipeItem = sender as SwipeItem;
-    var tarea = swipeItem?.CommandParameter as tarea;
-
-    if (tarea != null)
-    {
-        string nuevoNombre = await DisplayPromptAsync("Editar Tarea", "Nombre de la tarea:", initialValue: tarea.nombre);
-        string nuevaDescripcion = await DisplayPromptAsync("Editar Tarea", "Descripción de la tarea:", initialValue: tarea.descripcion);
-        string nuevoEstado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
-
-        if (!string.IsNullOrEmpty(nuevoNombre) && !string.IsNullOrEmpty(nuevaDescripcion))
+        // Método genérico que establece un valor en una propiedad y dispara el evento PropertyChanged si el valor realmente cambia.
+        // La propiedad pasada por referencia `backingStore` almacena el valor actual.
+        protected bool SetProperty<T>(ref T backingStore, T value, [CallerMemberName] string propertyName = "")
         {
-            tarea.nombre = nuevoNombre;
-            tarea.descripcion = nuevaDescripcion;
-            tarea.estado = nuevoEstado;
+            // Si el valor nuevo es igual al valor actual, no hace nada y retorna false
+            if (EqualityComparer<T>.Default.Equals(backingStore, value))
+                return false;
 
-            // Actualizar la tarea en la base de datos
-            await App.Database.SaveTareaAsync(tarea);
-
-            // Recargar la lista de tareas
-            LoadTareas();
+            // Si el valor ha cambiado, lo asigna al backing store y notifica el cambio de propiedad.
+            backingStore = value;
+            OnPropertyChanged(propertyName); // Notifica que la propiedad ha cambiado
+            return true; // Indica que la propiedad fue cambiada
         }
     }
 }
 ```
 
-### Código Completo de `MainPage.xaml.cs`:
-
-```csharp
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Windows.Input;
-
-namespace gestorTareasaMaui
-{
-    public partial class MainPage : ContentPage
-    {
-        
-        
-        private ObservableCollection<tarea> tareasList;
-
-
-        public MainPage()
-        {
-   
-            InitializeComponent();
-            tareasList = new ObservableCollection<tarea> ();
-            TareasCollectionView.ItemsSource = tareasList;
-            LoadTareas();
-        }
-
-        
-        //Metodo para cargar las tareas de la base de datos que ya persisten.
-        private async void LoadTareas()
-        {
-            var tareas = await App.Database.GetTareasAsync();
-            tareasList.Clear();
-            foreach (var tarea in tareas)
-            {
-                tareasList.Add(tarea);
-            }
-        }
-
-        private async void OnAgregarTareaClicked(object sender, EventArgs e)
-        {
-
-            string nombre = await DisplayPromptAsync("Nombre", "Ingrese el nombre de la tarea");    
-            string descripcion = await DisplayPromptAsync("Descripcion", "Ingrese la descripcion de la tarea");
-            string estado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
-
-            if (!string.IsNullOrEmpty(nombre) && !string.IsNullOrEmpty(descripcion))
-            {
-                tarea nuevaTarea = new tarea()
-                {
-                    nombre = nombre,
-                    descripcion = descripcion,
-                    estado = estado
-                };
-
-                //Guardar la tarea en la base de datos
-                await App.Database.SaveTareaAsync(nuevaTarea);
-
-                tareasList.Add(nuevaTarea);
-                //TareasListView.ItemsSource = null;
-                //TareasListView.ItemsSource = tareasList;
-               // LoadTareas();
-            }
-
-        }
-
-        //Borrando tarea de la Lista y de la base de datos
-        private async void OnBorrarTareaCommand(object sender, EventArgs e)
-        {
-            var swipeItem = sender as SwipeItem;
-            var tarea = swipeItem?.CommandParameter as tarea;
-
-            if (tarea != null)
-            {
-                await App.Database.DeleteTareaAsync(tarea);
-                tareasList.Remove(tarea); // Eliminar la tarea de la colección observable
-            }
-        }
-
-        // Editando tarea de la Lista y de la base de datos
-        private async void OnEditarTareaCommand(object sender, EventArgs e)
-        {
-            var swipeItem = sender as SwipeItem;
-            var tarea = swipeItem?.CommandParameter as tarea;
-
-            if (tarea != null)
-            {
-                string nuevoNombre = await DisplayPromptAsync("Editar Tarea", "Nombre de la tarea:", initialValue: tarea.nombre);
-                string nuevaDescripcion = await DisplayPromptAsync("Editar Tarea", "Descripción de la tarea:", initialValue: tarea.descripcion);
-                string nuevoEstado = await DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
-
-                if (!string.IsNullOrEmpty(nuevoNombre) && !string.IsNullOrEmpty(nuevaDescripcion))
-                {
-                    tarea.nombre = nuevoNombre;
-                    tarea.descripcion = nuevaDescripcion;
-                    tarea.estado = nuevoEstado;
-
-                    // Actualizar la tarea en la base de datos
-                    await App.Database.SaveTareaAsync(tarea);
-
-                    // Recargar la lista de tareas
-                    LoadTareas();
-                }
-            }
-        }
-
-    }
-
-}
-```
-
-## Paso 5: Implementar Almacenamiento Local con SQLite
-1. Instalar el paquete NuGet `sqlite-net-pcl`:
-
-```sh
-dotnet add package sqlite-net-pcl
-```
-
-- Crear la clase `database.cs` en la raíz del proyecto.
+### Paso 5: Crear `database.cs` en la raíz del proyecto.
 - Esta clase manejará la conexión a la base de datos y las operaciones CRUD.
 - SQL lite es una base de datos relacional que se utiliza para almacenar datos localmente en aplicaciones móviles.
 - Utiliza métodos asincrónicos para interactuar con la base de datos.
 - Utiliza `CreateTableAsync` para crear la tabla de tareas en la base de datos.
 - Utiliza `ToListAsync`, `InsertAsync`, `UpdateAsync` y `DeleteAsync` para realizar operaciones en la base de datos.
-
+- dotnet add package sqlite-net-pcl
 
 ```csharp
+using gestorTareasaMaui.Models;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -502,89 +368,306 @@ namespace gestorTareasaMaui
 }
 ```
 
-## Paso 6: Probar la Aplicación
-1. Ejecutar la aplicación:
-   - Ejecuta la aplicación en un emulador Android o dispositivo físico.
-   - Verifica que las tareas se guardan y persisten en la base de datos.
-   - Prueba las funcionalidades de agregar, editar y borrar tareas.
+## Paso 6: Manejar la Lógica de Negocio en el ViewModel 
+- Editar el archivo en la carpera `ViewModels` llamado `MainPageViewModel.cs`.
+- Este archivo contendrá la lógica de negocio para la página principal de la aplicación.
+- Hereda de `BaseViewModel` para aprovechar las funcionalidades de `INotifyPropertyChanged`.
+- Agregar propiedades y métodos para manejar las tareas.
+- Utilizar comandos para agregar, editar y borrar tareas.
+- Utilizar métodos asincrónicos para interactuar con la base de datos.
 
-## Paso 7: Agregar Picker para seleccionar el estado de la tarea.
-- Agregar un Picker para seleccionar el estado de la tarea.
-- Utilizar `Picker` para mostrar una lista de opciones y permitir al usuario seleccionar una.
-- Agregar opciones de estado a la lista del Picker.
 
-### Agregar Picker al formulario de agregar tarea MainPage.xaml.
-- Agregar entre el Titulo del label y el CollectionView.
-- Agregar Picker con opciones de estado: Pendiente, Proceso, Completada o Mostrar Todo.
-```xml
-<!-- Picker para seleccionar el estado -->
-<Picker x:Name="EstadoPicker" Title="Filtrar por Estado" SelectedIndexChanged="OnEstadoChanged">
-    <Picker.Items>
-        <x:String>Mostrar Todo</x:String>
-        <x:String>Pendiente</x:String>
-        <x:String>Proceso</x:String>
-        <x:String>Completada</x:String>
-    </Picker.Items>
-</Picker>
-```
-
-### Manejar el evento SelectedIndexChanged del Picker en MainPage.xaml.cs.
-- Crear el método `OnEstadoChanged` para filtrar las tareas por estado.
-- Utilizar el método `LoadTareas` para cargar las tareas según el estado seleccionado.
-- Utilizar un switch para filtrar las tareas según el estado seleccionado.
+### Declaracion de las propiedades y comandos en `MainPageViewModel.cs`.
+- Crea una colección observable de tareas llamada `_tareasList` (Se actuliza automaticamente cuando cambien sus elementos).
+- Llama al método `LoadTareas` para cargar las tareas al iniciar la aplicación.
+- Crea un comando `OnAgregarTareaCommand` para agregar una nueva tarea.
+- Crea un comando `OnBorrarTareaCommand` para borrar una tarea.
+- Crea un comando `OnEditarTareaCommand` para editar una tarea.
 
 ```csharp
- // Método para cargar las tareas desde la base de datos con picker agregado
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows.Input;
+using gestorTareasaMaui.Models;
+using gestorTareasaMaui;
 
-    private async void LoadTareas(string estadoFiltro = null) //Agregamos Variable dentro del metodo
+namespace gestorTareasaMaui.ViewModels
+{
+    public class MainPageViewModel : BaseViewModel
     {
-        var tareas = await App.Database.GetTareasAsync();
-        tareasList.Clear();
+        private ObservableCollection<tarea> _tareasList;
+        private string _estadoFiltro;
+        private ICommand _onAgregarTareaCommand;
+        private ICommand _onEditarTareaCommand;
+        private ICommand _onBorrarTareaCommand;
 
-        //------------  Filtrar tareas si se especifica un estado dentro --------------------------
-        if (!string.IsNullOrEmpty(estadoFiltro) && estadoFiltro != "Mostrar Todo")
+        // Constructor
+        public MainPageViewModel()
         {
-            tareas = tareas.Where(t => t.estado == estadoFiltro).ToList();
+            _tareasList = new ObservableCollection<tarea>();
+            LoadTareas(); // Cargar las tareas inicialmente
         }
-
-        // Agregar las tareas a la colección
-        foreach (var tarea in tareas)
-        {
-            tareasList.Add(tarea);
-        }
-    }
-
-    // Evento cuando el usuario cambia el filtro de estado
-    private void OnEstadoChanged(object sender, EventArgs e)
-    {
-        string estadoSeleccionado = EstadoPicker.SelectedItem as string;
-        LoadTareas(estadoSeleccionado);  // Cargar las tareas filtradas por estado
-    }
-
 ```
 
-### Crear converter para cambiar el color del estado de la tarea.
+### Propiedades TareaList y EstadoFiltro en `MainPageViewModel.cs`.
+- Crea una propiedad `TareasList` para la colección observable de tareas.
+- Crear na propiedad `EstadoFiltro` para filtrar las tareas según su estado.
+ 
+```csharp
+// Propiedad que representa la lista de tareas
+public ObservableCollection<tarea> TareasList
+{
+    get => _tareasList;
+    set => SetProperty(ref _tareasList, value);
+}
+
+// Propiedad para manejar el estado de filtro
+public string EstadoFiltro
+{
+    get => _estadoFiltro;
+    set
+    {
+        SetProperty(ref _estadoFiltro, value);
+        LoadTareas(value); // Recargar las tareas cuando se cambia el filtro
+    }
+}
+```
+
+### Comando para Agregar Tarea, Editar y Borrar  en `MainPageViewModel.cs` (Definidos en el paso 2).
+- Crea un comando `OnAgregarTareaCommand` para agregar una nueva tarea.
+- Crea un comando `OnBorrarTareaCommand` para borrar una tarea.
+- Crea un comando `OnEditarTareaCommand` para editar una tarea.
+
+```csharp
+// Comando para agregar una nueva tarea
+public ICommand OnAgregarTareaCommand => _onAgregarTareaCommand ??= new Command(OnAgregarTarea);
+// Comando para borrar una tarea
+public ICommand OnBorrarTareaCommand => _onBorrarTareaCommand ??= new Command(OnEditarTarea);
+// Comando para editar una tarea
+public ICommand OnEditarTareaCommand => _onEditarTareaCommand ??= new Command(OnBorrarTarea);
+```
+
+### Crear el método para cargar las tareas de la base de datos 'LoadTareas' en `MainPageViewModel.cs`.
+- Utiliza el método `GetTareasAsync` de la base de datos para obtener todas las tareas.
+- Limpia la lista de tareas y agrega las tareas obtenidas a la colección observable.
+- Utiliza `await` y `async` para realizar operaciones asincrónicas.
+- Utiliza un bucle `foreach` para recorrer las tareas y agregarlas a la colección.
+
+```csharp
+private async void LoadTareas(string estadoFiltro = null)
+{
+    var tareas = await App.Database.GetTareasAsync(); // Obtener todas las tareas de la base de datos
+
+    // Filtrar las tareas si se proporciona un filtro de estado
+    if (!string.IsNullOrEmpty(estadoFiltro) && estadoFiltro != "Mostrar Todo")
+    {
+        tareas = tareas.Where(t => t.estado == estadoFiltro).ToList();
+    }
+
+    TareasList.Clear(); // Limpiar la lista antes de agregar las tareas filtradas
+
+    // Agregar las tareas filtradas a la lista
+    foreach (var tarea in tareas)
+    {
+        TareasList.Add(tarea);
+        Console.WriteLine($"Tarea agregada: {tarea.nombre}, {tarea.descripcion}, {tarea.estado}"); //Probar que nuestra tarea se ese insertando correctamente.
+    }
+}
+```
+
+### Crear el método para agregar una nueva tarea 'OnAgregarTarea' en `MainPageViewModel.cs`.
+- DisplayActionSheet: Presenta opciones para elegir algo y DisplayPromptAsync: Muestra cuadros de entrada de texto.
+- Utiliza `DisplayPromptAsync` para mostrar cuadros de entrada de texto.
+- Crea una nueva tarea con los datos ingresados por el usuario.
+- Guarda la tarea en la base de datos utilizando el método `SaveTareaAsync`.
+- Agrega la tarea a la colección observable y recarga la lista de tareas.
+- Utiliza `DisplayActionSheet` para mostrar opciones de estado.
+-
+```csharp
+private async void OnAgregarTarea()
+{
+    string nombre = await App.Current.MainPage.DisplayPromptAsync("Nombre", "Ingrese el nombre de la tarea");
+    string descripcion = await App.Current.MainPage.DisplayPromptAsync("Descripcion", "Ingrese la descripcion de la tarea");
+    string estado = await App.Current.MainPage.DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
+
+    if (!string.IsNullOrEmpty(nombre) && !string.IsNullOrEmpty(descripcion))
+    {
+        var nuevaTarea = new tarea
+        {
+            nombre = nombre,
+            descripcion = descripcion,
+            estado = estado
+        };
+
+        await App.Database.SaveTareaAsync(nuevaTarea);
+        TareasList.Add(nuevaTarea);
+        await App.Current.MainPage.DisplayAlert("Tarea Agregada", "La tarea se ha agregado correctamente", "OK");
+    }
+}
+```
+
+### Crear el metoodo para editar una Tarea 'OnEditarTarea' en `MainPageViewModel.cs`.
+- Utiliza el evento `OnEditarTareaCommand` para editar una tarea.
+
+```csharp
+private async void OnEditarTarea(tarea tarea)
+{
+    string nuevoNombre = await App.Current.MainPage.DisplayPromptAsync("Editar Tarea", "Nombre de la tarea:", initialValue: tarea.nombre);
+    string nuevaDescripcion = await App.Current.MainPage.DisplayPromptAsync("Editar Tarea", "Descripción de la tarea:", initialValue: tarea.descripcion);
+    string nuevoEstado = await App.Current.MainPage.DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
+
+    if (!string.IsNullOrEmpty(nuevoNombre) && !string.IsNullOrEmpty(nuevaDescripcion))
+    {
+        tarea.nombre = nuevoNombre;
+        tarea.descripcion = nuevaDescripcion;
+        tarea.estado = nuevoEstado;
+
+        await App.Database.SaveTareaAsync(tarea);
+        LoadTareas();  // Recargar la lista de tareas
+    }
+}
+```
+
+### Crear el método para borrar una tarea 'OnBorrarTarea' en `MainPageViewModel.cs`.
+- Utiliza el evento `OnBorrarTareaCommand` para borrar una tarea.
+
+```csharp
+private async void OnBorrarTarea(tarea tarea)
+{
+    await App.Database.DeleteTareaAsync(tarea);
+    TareasList.Remove(tarea);  // Eliminar la tarea de la lista
+    await App.Current.MainPage.DisplayAlert("Tarea Eliminada", "La tarea se ha eliminado correctamente", "OK");
+}
+```
+
+### Código Completo de `MainPageViewModel.cs`:
+```csharp
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows.Input;
+using gestorTareasaMaui.Models;
+using gestorTareasaMaui;
+
+namespace gestorTareasaMaui.ViewModels
+{
+    public class MainPageViewModel : BaseViewModel
+    {
+        private ObservableCollection<tarea> _tareasList;
+        private string _estadoFiltro;
+        private ICommand _onAgregarTareaCommand;
+        private ICommand _onEditarTareaCommand;
+        private ICommand _onBorrarTareaCommand;
+
+        public MainPageViewModel()
+        {
+            _tareasList = new ObservableCollection<tarea>();
+            LoadTareas();
+        }
+
+        public ObservableCollection<tarea> TareasList
+        {
+            get => _tareasList;
+            set => SetProperty(ref _tareasList, value);
+        }
+
+      public string EstadoFiltro
+        {
+            get => _estadoFiltro;
+            set
+            {
+                SetProperty(ref _estadoFiltro, value);
+                LoadTareas(value);
+            }
+        }
+
+        public ICommand OnAgregarTareaCommand => _onAgregarTareaCommand ??= new Command(OnAgregarTarea);
+        public ICommand OnEditarTareaCommand => _onEditarTareaCommand ??= new Command<tarea>(OnEditarTarea);
+        public ICommand OnBorrarTareaCommand => _onBorrarTareaCommand ??= new Command<tarea>(OnBorrarTarea);
+
+        private async void LoadTareas(string estadoFiltro = null)
+        {
+            var tareas = await App.Database.GetTareasAsync();
+
+            if (!string.IsNullOrEmpty(estadoFiltro) && estadoFiltro != "Mostrar Todo")
+            {
+                tareas = tareas.Where(t => t.estado == estadoFiltro).ToList();
+            }
+
+            TareasList.Clear();
+            foreach (var tarea in tareas)
+            {
+                TareasList.Add(tarea);
+                Console.WriteLine($"Tarea agregada: {tarea.nombre}, {tarea.descripcion}, {tarea.estado}");
+
+            }
+        }
+
+        private async void OnAgregarTarea()
+        {
+            string nombre = await App.Current.MainPage.DisplayPromptAsync("Nombre", "Ingrese el nombre de la tarea");
+            string descripcion = await App.Current.MainPage.DisplayPromptAsync("Descripcion", "Ingrese la descripcion de la tarea");
+            string estado = await App.Current.MainPage.DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
+
+            if (!string.IsNullOrEmpty(nombre) && !string.IsNullOrEmpty(descripcion))
+            {
+                var nuevaTarea = new tarea
+                {
+                    nombre = nombre,
+                    descripcion = descripcion,
+                    estado = estado
+                };
+
+                await App.Database.SaveTareaAsync(nuevaTarea);
+                TareasList.Add(nuevaTarea);
+                await App.Current.MainPage.DisplayAlert("Tarea Agregada", "La tarea se ha agregado correctamente", "OK");
+            }
+        }
+
+        private async void OnEditarTarea(tarea tarea)
+        {
+            string nuevoNombre = await App.Current.MainPage.DisplayPromptAsync("Editar Tarea", "Nombre de la tarea:", initialValue: tarea.nombre);
+            string nuevaDescripcion = await App.Current.MainPage.DisplayPromptAsync("Editar Tarea", "Descripción de la tarea:", initialValue: tarea.descripcion);
+            string nuevoEstado = await App.Current.MainPage.DisplayActionSheet("Estado", "Cancelar", null, "Pendiente", "Proceso", "Completada");
+
+            if (!string.IsNullOrEmpty(nuevoNombre) && !string.IsNullOrEmpty(nuevaDescripcion))
+            {
+                tarea.nombre = nuevoNombre;
+                tarea.descripcion = nuevaDescripcion;
+                tarea.estado = nuevoEstado;
+
+                await App.Database.SaveTareaAsync(tarea);
+                LoadTareas();  // Recargar la lista de tareas
+            }
+        }
+
+        private async void OnBorrarTarea(tarea tarea)
+        {
+            await App.Database.DeleteTareaAsync(tarea);
+            TareasList.Remove(tarea);  // Eliminar la tarea de la lista
+            await App.Current.MainPage.DisplayAlert("Tarea Eliminada", "La tarea se ha eliminado correctamente", "OK");
+        }
+    }
+}
+```
+
+### Paso 7: Crear convertidor de colores para el estado de la tare en `EstadoColorConverter.cs`.
 - Crear una carpeta llamada `Converters` en la raíz del proyecto.
 - Dentro de la carpeta `Converters`, crear una clase llamada `EstadoColorConverter.cs`.
 - Un Converter es una clase que implementa la interfaz `IValueConverter` y convierte un valor en otro.
-
-1. Editamos el archivo MainPage.xaml y agregamos el converter.
-```xml
-<!-- Cambiar el color del texto del estado dependiendo del valor -->
-<Label Text="{Binding estado}" FontSize="12" 
-TextColor="{Binding estado, Converter={StaticResource EstadoColorConverter}}" />
-```
-
-2. Creamos la clase `EstadoColorConverter.cs` en la carpeta `Converters`.
+- puede ser utilizado para convertir el estado de la tarea en un color para mostrarlo en la interfaz o para convertir un valor en otro como por ejemplo un valor booleano en un color o un valor numérico en un texto.
 
 ```csharp
 using System;
-using Microsoft.Maui.Controls;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 
-namespace gestorTareasaMaui
-{
-    public class EstadoColorConverter : IValueConverter
+
+namespace gestorTareasaMaui.Converters
+{   public class EstadoColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -595,7 +678,7 @@ namespace gestorTareasaMaui
                 case "Pendiente":
                     return Color.FromArgb("#FF0000"); // Rojo para tareas Pendientes
                 case "Proceso":
-                    return Color.FromArgb("#FFFF00");  // Amarillo para tareas Proceso
+                    return Color.FromArgb("#000080");  // Amarillo para tareas en Proceso
                 case "Completada":
                     return Color.FromArgb("#008000");  // Verde para tareas Completadas
                 default:
@@ -611,84 +694,198 @@ namespace gestorTareasaMaui
 }
 ```
 
-### Agregar el converter al archivo `App.xaml`.
-- Agregar el converter al archivo `App.xaml` para que esté disponible en toda la aplicación.
+### En el archivo `App.xaml` agregar el converter, este es un paso importante para que el converter este disponible en toda la aplicación.
 - Agregar el namespace `xmlns:converters` y la referencia al converter en `Application.Resources`.
 
 ```xml
-<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<!-- xmlns:Converters="clr-namespace:gestorTareasaMaui.Converters"
+ <Converters:EstadoColorConverter x:Key="EstadoColorConverter" /> -->
+
+ <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:Converters="clr-namespace:gestorTareasaMaui.Converters"
+             xmlns:local="clr-namespace:gestorTareasaMaui"
+             xmlns:Converters="clr-namespace:gestorTareasaMaui.Converters" //Agregamos el namespace de los convertidores
              x:Class="gestorTareasaMaui.App">
     <Application.Resources>
         <ResourceDictionary>
-            <Converters:EstadoColorConverter x:Key="EstadoColorConverter" />
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Converters:EstadoColorConverter x:Key="EstadoColorConverter" /> //Agregamos el converter, es decir su referencia.
+
+            <Color x:Key="BackgroundColorLight">White</Color>
+            <Color x:Key="BackgroundColorDark">Black</Color>
+            <Style TargetType="ContentPage">
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource BackgroundColorLight}, Dark={StaticResource BackgroundColorDark}}" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
- </Application>
+</Application>
+
 ```
 
----
 
-## Paso 8 (Opcional): Agregar una Página de Perfil al Menú de Navegación
-
-En este paso, agregaremos una nueva página **Perfil** al menú de la aplicación utilizando `Shell`.
-
-### **1. Agregar el ítem de navegación en `AppShell.xaml`**
-
-Abre el archivo `AppShell.xaml` y modifícalo para incluir la nueva página de perfil:
+## Paso 8: AppShell.xaml
 
 ```xml
+<?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="gestorTareasaMaui.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:gestorTareasaMaui"
-    Shell.FlyoutBehavior="Flyout">
+    xmlns:views="clr-namespace:gestorTareasaMaui.Views"
+    Shell.FlyoutBehavior="Flyout"
+    Title="gestorTareasaMaui">
 
+    <!-- Página Home -->
     <ShellContent
         Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
+        ContentTemplate="{DataTemplate views:MainPage}"
         Route="MainPage" />
-
-    <ShellContent
-        Title="Perfil"
-        ContentTemplate="{DataTemplate local:UserPage}"
-        Route="UserPage" />
 </Shell>
+
 ```
 
-### **2. Crear la Página `UserPage.xaml`**
+---
 
-Agrega un nuevo archivo **UserPage.xaml** y copia el siguiente código:
+## Paso 9: Probar la Aplicación
+1. Ejecutar la aplicación:
+   - Ejecuta la aplicación en un emulador Android o dispositivo físico.
+   - Verifica que las tareas se guardan y persisten en la base de datos.
+   - Prueba las funcionalidades de agregar, editar y borrar tareas.
 
+
+---
+
+## Paso 10 (Opcional): Agregar una Página de Perfil al Menú de Navegación
+
+
+### 1. Crear la Página `UserPage.xaml`
+- En Views, crea una nueva página llamada `UserPage.xaml`.
+- Agrega un diseño sencillo para mostrar la información del usuario.
+- No olvides agregar los bindings necesarios para mostrar los datos del usuario. (Nombre, Correo, etc.)
+
+### 2. Definiendo los namespaces en `UserPage.xaml`.
+
+```xml
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+x:Class="gestorTareasaMaui.Views.UserPage"
+xmlns:viewModels="clr-namespace:gestorTareasaMaui.ViewModels" 
+BackgroundColor="White"
+Title="Profile">
+```
+
+### 3. Vincular el Binding Context.
+
+```xml
+<ContentPage.BindingContext>
+    <viewModels:UserPageViewModel />
+</ContentPage.BindingContext>
+```
+
+### 4. Vertical StackLayout para la Página de Perfil Y Border para la Imagen del Usuario (robot.png).
+
+```xml
+<VerticalStackLayout Padding="15" Spacing="15" VerticalOptions="StartAndExpand">
+
+    <Border Stroke="White" StrokeThickness="3" Background="White"
+            WidthRequest="120" HeightRequest="120" StrokeShape="Ellipse"
+            HorizontalOptions="Center">
+        <Image Source="robot.png" WidthRequest="150" HeightRequest="150"/>
+    </Border>
+```
+
+### 5. Tarjeta de infomracion de usuario.
+- Usamos un Border para crear una tarjeta de información del usuario.
+- Agregamos un Grid para organizar la información en filas y columnas.
+- Definimos las filas y columnas del Grid.
+
+```xml
+<Border BackgroundColor="White" StrokeThickness="10" StrokeShape="RoundRectangle 15"
+        Padding="20" Margin="5">
+    <Grid RowSpacing="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Contenido de las celdas de la tabla -->
+
+
+    </Grid>
+</Border>
+```
+
+### 6. Contenido de la información del usuario.
+- Agrega etiquetas para mostrar el nombre, el nombre de usuario, el correo electrónico y la ubicación del usuario.
+- Utiliza el binding para mostrar los datos del usuario.
+
+```xml
+<Label Text="Name:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="0" Grid.Column="0"/>
+<Label Text="{Binding Nombre}" FontSize="14" TextColor="Black" Grid.Row="0" Grid.Column="1"/>
+
+<Label Text="Username: " FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="1" Grid.Column="0"/>
+<Label Text="{Binding Username}" FontSize="14" TextColor="Black" Grid.Row="1" Grid.Column="1"/>
+
+<Label Text="Email: " FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="2" Grid.Column="0"/>
+<Label Text="{Binding Correo}" FontSize="14" TextColor="Black" Grid.Row="2" Grid.Column="1"/>
+
+<Label Text="Location: " FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="3" Grid.Column="0"/>
+<Label Text="{Binding Location}" FontSize="14" TextColor="Black" Grid.Row="3" Grid.Column="1"/> 
+```
+
+### 7.Boton edición (opcional)
+
+```xml
+<Button Text="Editar Perfil"
+BackgroundColor="#6A0DAD"
+TextColor="White"
+CornerRadius="20"
+FontAttributes="Bold"
+WidthRequest="200"
+HorizontalOptions="Center"/>
+</VerticalStackLayout>
+</ContentPage>
+```
+
+### 8. Codigo completo de `UserPage.xaml`:
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="gestorTareasaMaui.UserPage"
-             Title="My Profile">
+             x:Class="gestorTareasaMaui.Views.UserPage"
+             xmlns:viewModels="clr-namespace:gestorTareasaMaui.ViewModels" 
+             BackgroundColor="White"
+             Title="Profile">
 
-    <ContentPage.Background>
-        <LinearGradientBrush>
-            <GradientStop Color="#6A0DAD" Offset="0.1"/>
-            <GradientStop Color="#9B30FF" Offset="1.0"/>
-        </LinearGradientBrush>
-    </ContentPage.Background>
+    <!-- View Model Context, For Bidings. -->
+    <ContentPage.BindingContext>
+        <viewModels:UserPageViewModel />
+    </ContentPage.BindingContext>
 
-    <VerticalStackLayout Padding="30" Spacing="25" VerticalOptions="Center">
+    <VerticalStackLayout Padding="15" Spacing="15" VerticalOptions="StartAndExpand">
 
         <!-- Avatar Redondeado -->
         <Border Stroke="White" StrokeThickness="3" Background="White"
                 WidthRequest="120" HeightRequest="120" StrokeShape="Ellipse"
                 HorizontalOptions="Center">
-            <Image Source="dotnet_bot.png" WidthRequest="100" HeightRequest="100"/>
+            <Image Source="robot.png" WidthRequest="150" HeightRequest="150"/>
         </Border>
 
         <!-- Tarjeta de Información -->
-        <Border BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 15"
+        <Border BackgroundColor="White" StrokeThickness="10" StrokeShape="RoundRectangle 15"
                 Padding="20" Margin="5">
-            <Grid RowSpacing="10">
+            <Grid RowSpacing="15">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -702,16 +899,16 @@ Agrega un nuevo archivo **UserPage.xaml** y copia el siguiente código:
                 </Grid.ColumnDefinitions>
 
                 <Label Text="Name:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="0" Grid.Column="0"/>
-                <Label Text="Alex Maui" FontSize="18" TextColor="Black" Grid.Row="0" Grid.Column="1"/>
+                <Label Text="{Binding Nombre}" FontSize="14" TextColor="Black" Grid.Row="0" Grid.Column="1"/>
 
-                <Label Text="Username:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="1" Grid.Column="0"/>
-                <Label Text="@agmmauideveloper" FontSize="18" TextColor="Black" Grid.Row="1" Grid.Column="1"/>
+                <Label Text="Username: " FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="1" Grid.Column="0"/>
+                <Label Text="{Binding Username}" FontSize="14" TextColor="Black" Grid.Row="1" Grid.Column="1"/>
 
-                <Label Text="Email:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="2" Grid.Column="0"/>
-                <Label Text="alexmaui@email.com" FontSize="18" TextColor="Black" Grid.Row="2" Grid.Column="1"/>
+                <Label Text="Email: " FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="2" Grid.Column="0"/>
+                <Label Text="{Binding Correo}" FontSize="14" TextColor="Black" Grid.Row="2" Grid.Column="1"/>
 
-                <Label Text="Location:" FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="3" Grid.Column="0"/>
-                <Label Text="Ciudad de México, MX" FontSize="18" TextColor="Black" Grid.Row="3" Grid.Column="1"/>
+                <Label Text="Location: " FontAttributes="Bold" TextColor="#6A0DAD" Grid.Row="3" Grid.Column="0"/>
+                <Label Text="{Binding Location}" FontSize="14" TextColor="Black" Grid.Row="3" Grid.Column="1"/>
             </Grid>
         </Border>
 
@@ -728,24 +925,107 @@ Agrega un nuevo archivo **UserPage.xaml** y copia el siguiente código:
 </ContentPage>
 ```
 
-### **3. Crear el Código `UserPage.xaml.cs`**
 
-Agrega un archivo `UserPage.xaml.cs` y define la clase para la nueva página:
+### 9. Creamos UserPageViewModel.cs en la carpeta ViewModels.
+- Creamos una clase `UserPageViewModel` que hereda de `BaseViewModel`.
+- Agregamos propiedades para el nombre, el nombre de usuario, el correo electrónico y la ubicación del usuario.
+- Inicializamos las propiedades con valores de ejemplo.
+- Estos valores se mostrarán en la página de perfil del usuario.
 
 ```csharp
-namespace gestorTareasaMaui;
+using System.Windows.Input;
+using gestorTareasaMaui.Models;
 
-public partial class UserPage : ContentPage
+namespace gestorTareasaMaui.ViewModels
 {
-	public UserPage()
-	{
-		InitializeComponent();
-	}
+    public class UserPageViewModel : BaseViewModel
+    {
+        private string _nombre;
+        private string _correo;
+        private string _location;
+        private string _username;
+        public UserPageViewModel()
+        {
+            // Cargar los datos del usuario al iniciar
+            CargarDatosUsuario();
+        }
+
+        // Nombre que se mostrarán en la UI View.
+        public string Nombre
+        {
+            get => _nombre;
+            set => SetProperty(ref _nombre, value);
+        }
+
+        // Username que se mostrará en la UI View.
+        public string Username
+        {
+            get => _username;
+            set => SetProperty(ref _username, value);
+        }
+
+        // Correo que se mostrará en la UI View.
+        public string Correo
+        {
+            get => _correo;
+            set => SetProperty(ref _correo, value);
+        }
+
+        public string Location
+        {
+            get => _location;
+            set => SetProperty(ref _location, value);
+        }
+
+
+        // Método para cargar los datos del usuario
+        private void CargarDatosUsuario()
+        {
+            // Aquí deberíamos cargar los datos del usuario desde una fuente de datos,
+            // por ejemplo, desde la base de datos o un servicio.
+            // Para este ejemplo, usaremos valores predeterminados.
+            Nombre = "Maui Microsoft Workshop 2025";
+            Correo = "maui.the.best@microsoft.com";
+            Username = "mauimicrosoft2025";
+            Location = "Ciudad de México";
+        }
+    }
 }
 ```
 
-### **4. Ejecutar la Aplicación**
-Prueba la aplicación y verifica que el nuevo ítem de perfil se muestra en el menú de navegación. Puedes personalizar la página de perfil y agregar más información según tus necesidades.
+
+### 10. Agregar el ítem de navegación en `AppShell.xaml`
+
+Abre el archivo `AppShell.xaml` y modifícalo para incluir la nueva página de perfil:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="gestorTareasaMaui.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:gestorTareasaMaui.Views"
+    Shell.FlyoutBehavior="Flyout"
+    Title="gestorTareasaMaui">
+
+    <!-- Página Home -->
+    <ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate views:MainPage}"
+        Route="MainPage" />
+
+    <!--Nueva página de perfil (Descomentada cuando sea necesario)-->
+    <ShellContent
+        Title="Perfil"
+        ContentTemplate="{DataTemplate views:UserPage}"
+        Route="UserPage"/>
+
+</Shell>
+```
+
+### Ejecutar la Aplicación**
+- Prueba la aplicación y verifica que el nuevo ítem de perfil se muestra en el menú de navegación. 
+- Puedes personalizar la página de perfil y agregar más información según tus necesidades.
 
 ---
 

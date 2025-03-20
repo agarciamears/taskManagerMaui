@@ -1,14 +1,18 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="gestorTareasaMaui.MainPage"
-              BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, Dark={StaticResource BackgroundColorDark}}">
-             
+             x:Class="gestorTareasaMaui.Views.MainPage"
+             xmlns:viewModels="clr-namespace:gestorTareasaMaui.ViewModels"  
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundColorLight}, Dark={StaticResource BackgroundColorDark}}">
+
+    <ContentPage.BindingContext>
+        <viewModels:MainPageViewModel />
+    </ContentPage.BindingContext>
 
     <ScrollView>
-        <StackLayout Padding="10" BackgroundColor="White">
-            <Label Text="Mi Primer Gestor de Tareas" FontSize="22" HorizontalOptions="Center" TextColor="Purple" />
+        <StackLayout Padding="25" BackgroundColor="White" VerticalOptions="StartAndExpand" Spacing="20" >
+            <Label Text="My Tasks" FontSize="25" HorizontalOptions="Center" TextColor="Purple" FontAttributes="Bold" />
 
-            <Picker x:Name="EstadoPicker" Title="Filtrar por " SelectedIndexChanged="OnEstadoChanged">
+            <Picker Title="Filtrar Tareas"  SelectedItem="{Binding EstadoFiltro}">
                 <Picker.Items>
                     <x:String>Mostrar Todo</x:String>
                     <x:String>Pendiente</x:String>
@@ -17,36 +21,33 @@
                 </Picker.Items>
             </Picker>
 
-            <CollectionView x:Name="TareasCollectionView" BackgroundColor="White">
+            <CollectionView ItemsSource="{Binding TareasList}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <SwipeView>
                             <SwipeView.LeftItems>
                                 <SwipeItems>
-                                    <SwipeItem Text="Editar" BackgroundColor="Blue" Invoked="OnEditarTareaCommand" CommandParameter="{Binding .}" />
+                                    <SwipeItem Text="Editar" BackgroundColor="Blue" Command="{Binding BindingContext.OnEditarTareaCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" />
                                 </SwipeItems>
                             </SwipeView.LeftItems>
                             <SwipeView.RightItems>
                                 <SwipeItems>
-                                    <SwipeItem Text="Borrar" BackgroundColor="Red"  Invoked="OnBorrarTareaCommand"  CommandParameter="{Binding .}" />
+                                    <SwipeItem Text="Borrar" BackgroundColor="Red" Command="{Binding BindingContext.OnBorrarTareaCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" />
                                 </SwipeItems>
                             </SwipeView.RightItems>
                             <Border Stroke="LightGray" StrokeThickness="1" Padding="10" Margin="5">
                                 <StackLayout>
                                     <Label Text="{Binding nombre}" FontSize="18" FontAttributes="Bold" />
                                     <Label Text="{Binding descripcion}" FontSize="14" />
-                                    
-                                    <!-- Cambiar el color del texto del estado dependiendo del valor -->
-                                    <Label Text="{Binding estado}" FontSize="12" 
-                                    TextColor="{Binding estado, Converter={StaticResource EstadoColorConverter}}" />
-                                    
+                                    <Label Text="{Binding estado}" FontSize="12" TextColor="{Binding estado, Converter={StaticResource EstadoColorConverter}}" />
                                 </StackLayout>
                             </Border>
                         </SwipeView>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-            <Button Text="Agregar Tarea" Clicked="OnAgregarTareaClicked" />
+
+            <Button Text="Agregar Tarea" Command="{Binding OnAgregarTareaCommand}"/>
         </StackLayout>
     </ScrollView>
 </ContentPage>
